@@ -1,165 +1,167 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Simulador de Embreagem</title>
+  <title>Simulador Embreagem</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
     body { 
-      font-family: Arial; background: #1a1a2e; color: white; 
-      height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+      height: 100vh; overflow: hidden; font-family: Arial;
+      background: url('carro.jpg') no-repeat center center;
+      background-size: cover;
     }
-    #painel {
-      background: #0f0f1e; padding: 15px; text-align: center;
-      border-bottom: 2px solid #333;
-    }
-    #velocimetro { font-size: 32px; font-weight: bold; }
-    #marcha { font-size: 24px; margin-top: 5px; }
-    #status { font-size: 18px; margin-top: 10px; color: #4CAF50; min-height: 25px; }
     
-    #cenario {
-      flex: 1; background: linear-gradient(#87CEEB, #90EE90);
-      position: relative; overflow: hidden;
+    #hud {
+      position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.7); color: #0F0; padding: 10px 20px;
+      border-radius: 10px; text-align: center; font-weight: bold;
+      border: 2px solid #0F0; text-shadow: 0 0 5px #0F0;
     }
-    #estrada {
-      position: absolute; bottom: 0; width: 100%; height: 40%;
-      background: #333; border-top: 5px solid #FFD700;
+    #velocidade { font-size: 28px; }
+    #marcha-display { font-size: 20px; margin-top: 5px; }
+    #status { 
+      position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
+      background: rgba(255,0,0,0.8); color: white; padding: 8px 15px;
+      border-radius: 20px; font-size: 16px; display: none;
     }
-    #faixa {
-      position: absolute; bottom: 20%; width: 100%; height: 5px;
-      background: repeating-linear-gradient(90deg, #FFF 0 40px, transparent 40px 80px);
-      animation: moverEstrada 0.5s linear infinite paused;
-    }
-    #carro {
-      position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
-      font-size: 60px; transition: bottom 0.2s;
-    }
-    #carro.morrendo { animation: tremer 0.1s infinite; }
 
-    #controles {
-      background: #0f0f1e; padding: 20px; display: flex; 
-      justify-content: space-around; align-items: flex-end;
+    #pedais {
+      position: absolute; bottom: 10px; width: 100%; height: 180px;
+      display: flex; justify-content: center; align-items: flex-end; gap: 15px;
     }
+    
     .pedal {
-      width: 80px; height: 120px; border-radius: 10px 10px 40px 40px;
-      background: #000; border: 3px solid #555; position: relative;
-      transition: background 0.1s, height 0.3s; cursor: pointer;
+      width: 70px; height: 130px; background: #000; 
+      border: 3px solid #333; border-radius: 8px 8px 30px 30px;
+      position: relative; transition: all 0.1s; cursor: pointer;
+      box-shadow: inset 0 -10px 20px rgba(0,0,0,0.8);
     }
+    .pedal.ativo { background: #00FF00; box-shadow: 0 0 15px #00FF00; }
     .pedal-label {
-      position: absolute; top: -25px; width: 100%; 
-      text-align: center; font-size: 12px;
+      position: absolute; bottom: -25px; width: 100%; text-align: center;
+      color: white; font-size: 11px; font-weight: bold;
+      text-shadow: 1px 1px 2px #000;
     }
-    #embreagem.ativa { background: #4CAF50; }
-    #acelerador.ativo { background: #4CAF50; }
     
-    #marchas { display: flex; flex-direction: column; gap: 10px; }
-    .marcha-btn {
-      width: 60px; height: 40px; background: #000; 
-      border: 2px solid #555; border-radius: 8px;
-      color: white; font-weight: bold;
+    #embreagem { transform: translateY(0px); }
+    #embreagem.pisada { transform: translateY(-30px); } /* sobe quando pisa */
+    
+    #cambio {
+      position: absolute; bottom: 30px; right: 20px;
+      background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px;
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .marcha-btn.ativa { background: #4CAF50; border-color: #4CAF50; }
+    .marcha-btn {
+      width: 50px; height: 35px; background: #000; color: #FFF;
+      border: 2px solid #444; border-radius: 5px; font-weight: bold;
+    }
+    .marcha-btn.ativa { background: #00FF00; color: #000; }
 
-    @keyframes moverEstrada { from { background-position: 0; } to { background-position: -80px; } }
-    @keyframes tremer { 0%,100% { transform: translateX(-50%); } 50% { transform: translateX(-52%); } }
+    #pista {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: url('carro.jpg') no-repeat center center;
+      background-size: cover; z-index: -1;
+    }
+    #pista.andando {
+      animation: tremerPista 0.2s infinite;
+    }
+    @keyframes tremerPista { 
+      0%,100% { transform: translateX(0); } 
+      50% { transform: translateX(-1px); } 
+    }
   </style>
 </head>
 <body>
-  <div id="painel">
-    <div id="velocimetro">0 km/h</div>
-    <div id="marcha">Ponto Morto</div>
-    <div id="status">Pise na embreagem para começar</div>
+  <div id="pista"></div>
+  
+  <div id="hud">
+    <div id="velocidade">0 km/h</div>
+    <div id="marcha-display">N</div>
   </div>
+  
+  <div id="status">MORREU!</div>
 
-  <div id="cenario">
-    <div id="estrada"></div>
-    <div id="faixa"></div>
-    <div id="carro">🚗</div>
-  </div>
-
-  <div id="controles">
+  <div id="pedais">
     <div class="pedal" id="embreagem">
       <div class="pedal-label">EMBREAGEM</div>
     </div>
-    
     <div class="pedal" id="freio">
       <div class="pedal-label">FREIO</div>
     </div>
-
-    <div id="marchas">
-      <button class="marcha-btn ativa" data-marcha="N">N</button>
-      <button class="marcha-btn" data-marcha="1">1</button>
-      <button class="marcha-btn" data-marcha="2">2</button>
-    </div>
-
     <div class="pedal" id="acelerador">
       <div class="pedal-label">ACELERADOR</div>
     </div>
   </div>
 
+  <div id="cambio">
+    <button class="marcha-btn ativa" data-marcha="N">N</button>
+    <button class="marcha-btn" data-marcha="1">1</button>
+    <button class="marcha-btn" data-marcha="2">2</button>
+    <button class="marcha-btn" data-marcha="3">3</button>
+  </div>
+
 <script>
   let estado = {
-    embreagem: 0, // 0 = solta, 100 = pisada total
+    embreagem: 0, // 0 solta, 100 pisada
     acelerador: 0,
     freio: 0,
     marcha: 'N',
     velocidade: 0,
-    ligado: false,
+    carroLigado: false,
     morreu: false
   };
 
   const embreagemEl = document.getElementById('embreagem');
   const aceleradorEl = document.getElementById('acelerador');
   const freioEl = document.getElementById('freio');
-  const velocidadeEl = document.getElementById('velocimetro');
-  const marchaEl = document.getElementById('marcha');
+  const velocidadeEl = document.getElementById('velocidade');
+  const marchaEl = document.getElementById('marcha-display');
   const statusEl = document.getElementById('status');
-  const faixaEl = document.getElementById('faixa');
-  const carroEl = document.getElementById('carro');
+  const pistaEl = document.getElementById('pista');
 
-  // Pedal Embreagem - toca e segura pra pisar
-  embreagemEl.addEventListener('touchstart', () => pisarEmbreagem());
+  // EMBREAGEM - segurar pra pisar
+  embreagemEl.addEventListener('touchstart', (e) => { e.preventDefault(); pisarEmbreagem(); });
   embreagemEl.addEventListener('mousedown', () => pisarEmbreagem());
   embreagemEl.addEventListener('touchend', () => soltarEmbreagem());
   embreagemEl.addEventListener('mouseup', () => soltarEmbreagem());
 
-  // Acelerador
-  aceleradorEl.addEventListener('touchstart', () => pisarAcelerador());
+  // ACELERADOR
+  aceleradorEl.addEventListener('touchstart', (e) => { e.preventDefault(); pisarAcelerador(); });
   aceleradorEl.addEventListener('mousedown', () => pisarAcelerador());
   aceleradorEl.addEventListener('touchend', () => soltarAcelerador());
   aceleradorEl.addEventListener('mouseup', () => soltarAcelerador());
 
-  // Freio
-  freioEl.addEventListener('touchstart', () => estado.freio = 100);
+  // FREIO
+  freioEl.addEventListener('touchstart', (e) => { e.preventDefault(); estado.freio = 100; });
   freioEl.addEventListener('mousedown', () => estado.freio = 100);
   freioEl.addEventListener('touchend', () => estado.freio = 0);
   freioEl.addEventListener('mouseup', () => estado.freio = 0);
 
-  // Marchas
+  // MARCHAS
   document.querySelectorAll('.marcha-btn').forEach(btn => {
-    btn.addEventListener('click', () => trocarMarcha(btn.dataset.marcha));
+    btn.addEventListener('click', () => tentarTrocarMarcha(btn.dataset.marcha));
   });
 
   function pisarEmbreagem() {
     estado.embreagem = 100;
-    embreagemEl.classList.add('ativa');
-    embreagemEl.style.height = '80px'; // sobe o pedal
-    atualizarStatus();
+    embreagemEl.classList.add('ativo');
+    embreagemEl.classList.add('pisada'); // sobe
   }
 
   function soltarEmbreagem() {
-    // Solta devagar pra simular controle
-    let intervalo = setInterval(() => {
-      estado.embreagem -= 5;
-      embreagemEl.style.height = 80 + (40 * (100 - estado.embreagem) / 100) + 'px';
+    // Solta devagar - isso é o controle de embreagem
+    let soltando = setInterval(() => {
+      estado.embreagem -= 3;
+      embreagemEl.style.transform = `translateY(${-30 * estado.embreagem / 100}px)`;
       
       if (estado.embreagem <= 0) {
         estado.embreagem = 0;
-        embreagemEl.classList.remove('ativa');
-        clearInterval(intervalo);
+        embreagemEl.classList.remove('ativo');
+        embreagemEl.classList.remove('pisada');
+        clearInterval(soltando);
       }
       verificarSaida();
-    }, 50);
+    }, 30);
   }
 
   function pisarAcelerador() {
@@ -173,70 +175,82 @@
     aceleradorEl.classList.remove('ativo');
   }
 
-  function trocarMarcha(novaMarcha) {
-    if (estado.embreagem < 80) {
-      statusEl.innerText = 'Pisa na embreagem pra trocar!';
+  function tentarTrocarMarcha(novaMarcha) {
+    if (estado.embreagem < 90) {
+      mostrarStatus('Pisa na embreagem primeiro!');
       return;
     }
     estado.marcha = novaMarcha;
     document.querySelectorAll('.marcha-btn').forEach(b => b.classList.remove('ativa'));
     document.querySelector(`[data-marcha="${novaMarcha}"]`).classList.add('ativa');
-    marchaEl.innerText = novaMarcha === 'N' ? 'Ponto Morto' : novaMarcha + 'ª Marcha';
+    marchaEl.innerText = novaMarcha;
+    
+    // Regra: quando troca marcha, embreagem verde e acelerador preto
+    aceleradorEl.classList.remove('ativo');
+    estado.acelerador = 0;
   }
 
   function verificarSaida() {
-    if (estado.marcha === '1' && estado.embreagem < 50 && estado.acelerador > 50) {
-      if (!estado.ligado) {
-        estado.ligado = true;
-        statusEl.innerText = 'Carro andando!';
+    // Lógica pra sair: 1ª marcha + acelerador + soltando embreagem
+    if (estado.marcha === '1' && estado.acelerador > 50 && estado.embreagem < 60 && estado.embreagem > 20) {
+      if (!estado.carroLigado) {
+        estado.carroLigado = true;
+        statusEl.style.display = 'none';
       }
     }
-    // Morreu o carro
-    if (estado.marcha !== 'N' && estado.embreagem < 20 && estado.acelerador < 20 && estado.velocidade < 5) {
+    
+    // Morreu: tentou sair sem aceleração ou soltou rápido demais
+    if (estado.marcha !== 'N' && estado.embreagem < 15 && estado.acelerador < 20 && estado.velocidade < 3) {
       morrerCarro();
+    }
+
+    // Quando carro já anda, embreagem volta pro preto e acelerador fica verde
+    if (estado.carroLigado && estado.velocidade > 5) {
+      embreagemEl.classList.remove('ativo');
     }
   }
 
   function morrerCarro() {
     estado.morreu = true;
-    estado.ligado = false;
+    estado.carroLigado = false;
     estado.velocidade = 0;
-    carroEl.classList.add('morrendo');
-    statusEl.innerText = 'MORREU! Pisa na embreagem e volta pro N';
-    setTimeout(() => carroEl.classList.remove('morrendo'), 1000);
+    mostrarStatus('MORREU! Volta pro N e pisa na embreagem');
+    pistaEl.classList.remove('andando');
   }
 
-  function atualizarStatus() {
-    if (!estado.ligado && !estado.morreu) {
-      if (estado.embreagem > 80) statusEl.innerText = 'Engata a 1ª marcha';
-      else if (estado.marcha === '1' && estado.embreagem > 80) statusEl.innerText = 'Acelera e solta devagar a embreagem';
-    }
+  function mostrarStatus(texto) {
+    statusEl.innerText = texto;
+    statusEl.style.display = 'block';
+    setTimeout(() => statusEl.style.display = 'none', 2000);
   }
 
-  // Loop do jogo
+  // Loop principal
   setInterval(() => {
-    // Física simples
-    if (estado.ligado && estado.marcha !== 'N') {
-      if (estado.acelerador > 0 && estado.embreagem < 50) {
-        estado.velocidade += estado.acelerador / 100 * 0.5;
-        if (estado.marcha === '1' && estado.velocidade > 20) estado.velocidade = 20;
-        if (estado.marcha === '2' && estado.velocidade > 40) estado.velocidade = 40;
-      }
+    // Aceleração só se tiver marcha, embreagem soltando e acelerador pisado
+    if (estado.carroLigado && estado.marcha !== 'N' && estado.embreagem < 70) {
+      estado.velocidade += (estado.acelerador / 100) * (estado.marcha * 0.15);
+      let velMax = estado.marcha * 25;
+      if (estado.velocidade > velMax) estado.velocidade = velMax;
     }
     
-    if (estado.freio > 0) estado.velocidade -= 1;
-    estado.velocidade -= 0.1; // atrito
-    if (estado.velocidade < 0) estado.velocidade = 0;
+    if (estado.freio > 0) estado.velocidade -= 0.8;
+    estado.velocidade *= 0.98; // atrito
+    if (estado.velocidade < 0.5) estado.velocidade = 0;
 
-    // UI
+    // Atualiza UI
     velocidadeEl.innerText = Math.floor(estado.velocidade) + ' km/h';
-    faixaEl.style.animationPlayState = estado.velocidade > 1 ? 'running' : 'paused';
-    faixaEl.style.animationDuration = (2 / (estado.velocidade / 10 + 0.1)) + 's';
+    
+    if (estado.velocidade > 2) {
+      pistaEl.classList.add('andando');
+    } else {
+      pistaEl.classList.remove('andando');
+      if (estado.velocidade === 0) estado.carroLigado = false;
+    }
 
-    // Reset morte
-    if (estado.morreu && estado.embreagem > 80 && estado.marcha === 'N') {
+    // Reset após morrer
+    if (estado.morreu && estado.embreagem > 90 && estado.marcha === 'N') {
       estado.morreu = false;
-      statusEl.innerText = 'Pise na embreagem para começar';
+      statusEl.style.display = 'none';
     }
   }, 50);
 </script>
