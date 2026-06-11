@@ -6,111 +6,85 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
     body { 
-      height: 100vh; overflow: hidden; font-family: Arial;
-      background: #000;
+      height: 100vh; overflow: hidden; font-family: Arial; background: #000;
     }
-    
     #cenario {
       position: absolute; width: 100%; height: 100%;
       background: url('carro.jpg') no-repeat center center;
-      background-size: cover; overflow: hidden;
+      background-size: cover;
     }
-    
-    #pista-video {
+    #pista {
       position: absolute; top: 0; left: 0; width: 100%; height: 55%;
-      background: url('https://i.imgur.com/8QpZ5rG.jpg') center center;
-      background-size: cover; z-index: 1;
-      transform-origin: bottom;
+      background: linear-gradient(#87CEEB 0%, #E0C9A6 100%);
+      z-index: 1; overflow: hidden;
     }
-    #pista-video.andando {
-      animation: scrollPista 0.3s linear infinite;
+    #estrada {
+      position: absolute; bottom: 0; width: 100%; height: 100%;
+      background: repeating-linear-gradient(0deg, #333 0px, #333 40px, #FFF 40px, #FFF 45px, #333 45px, #333 200px);
     }
-    
-    @keyframes scrollPista {
-      from { background-position: 0 0; }
-      to { background-position: 0 100px; }
-    }
+    #estrada.andando { animation: rolar 0.2s linear infinite; }
+    @keyframes rolar { from { background-position: 0 0; } to { background-position: 0 200px; } }
 
     #hud {
-      position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.85); color: #0F0; padding: 12px 25px;
-      border-radius: 10px; text-align: center; font-weight: bold;
+      position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.9); color: #0F0; padding: 10px 20px;
+      border-radius: 8px; text-align: center; font-weight: bold;
       border: 2px solid #0F0; text-shadow: 0 0 8px #0F0; z-index: 10;
     }
-    #velocidade { font-size: 32px; }
-    #marcha-display { font-size: 22px; margin-top: 5px; }
-    #rpm { font-size: 14px; color: #FF0; margin-top: 3px; }
+    #velocidade { font-size: 30px; }
+    #marcha-display { font-size: 20px; margin-top: 3px; }
     
-    #status { 
-      position: absolute; top: 140px; left: 50%; transform: translateX(-50%);
-      background: rgba(255,0,0,0.9); color: white; padding: 10px 20px;
-      border-radius: 20px; font-size: 16px; z-index: 10; display: none;
+    #debug {
+      position: absolute; top: 100px; left: 10px;
+      background: rgba(0,0,0,0.7); color: #FFF; padding: 5px;
+      font-size: 12px; z-index: 10; font-family: monospace;
     }
 
     #pedais {
-      position: absolute; bottom: 15px; width: 100%; height: 160px;
-      display: flex; justify-content: center; align-items: flex-end; gap: 20px; z-index: 10;
+      position: absolute; bottom: 10px; width: 100%; height: 160px;
+      display: flex; justify-content: center; align-items: flex-end; gap: 18px; z-index: 10;
     }
-    
     .pedal {
       width: 75px; height: 140px; background: #111; 
       border: 3px solid #444; border-radius: 10px 10px 35px 35px;
-      position: relative; transition: all 0.05s; cursor: pointer;
-      box-shadow: inset 0 -15px 25px rgba(0,0,0,0.9), 0 5px 10px rgba(0,0,0,0.5);
+      position: relative; transition: transform 0.05s; cursor: pointer;
     }
-    .pedal.ativo { background: #00FF00; box-shadow: 0 0 20px #00FF00, inset 0 -5px 15px rgba(0,0,0,0.5); }
+    .pedal.ativo { background: #00FF00; box-shadow: 0 0 25px #00FF00; }
     .pedal-label {
-      position: absolute; bottom: -28px; width: 100%; text-align: center;
-      color: white; font-size: 11px; font-weight: bold;
-      text-shadow: 2px 2px 3px #000;
+      position: absolute; bottom: -25px; width: 100%; text-align: center;
+      color: white; font-size: 11px; font-weight: bold; text-shadow: 2px 2px 3px #000;
     }
-    
     #embreagem { transform: translateY(0px); }
     #embreagem.pisada { transform: translateY(-35px); }
     
     #cambio {
-      position: absolute; bottom: 40px; right: 15px;
-      background: rgba(0,0,0,0.9); padding: 12px; border-radius: 12px;
-      display: flex; flex-direction: column; gap: 10px; z-index: 10;
-      border: 2px solid #333;
+      position: absolute; bottom: 35px; right: 12px;
+      background: rgba(0,0,0,0.9); padding: 10px; border-radius: 12px;
+      display: flex; flex-direction: column; gap: 8px; z-index: 10; border: 2px solid #333;
     }
     .marcha-btn {
-      width: 55px; height: 40px; background: #000; color: #FFF;
+      width: 55px; height: 38px; background: #000; color: #FFF;
       border: 2px solid #555; border-radius: 6px; font-weight: bold; font-size: 16px;
     }
     .marcha-btn.ativa { background: #00FF00; color: #000; border-color: #00FF00; }
-
-    #instrucoes {
-      position: absolute; bottom: 190px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.8); color: #FF0; padding: 8px 15px;
-      border-radius: 8px; font-size: 14px; z-index: 10; text-align: center;
-    }
   </style>
 </head>
 <body>
   <div id="cenario">
-    <div id="pista-video"></div>
+    <div id="pista"><div id="estrada"></div></div>
   </div>
   
   <div id="hud">
     <div id="velocidade">0 km/h</div>
     <div id="marcha-display">N</div>
-    <div id="rpm">0 RPM</div>
   </div>
   
-  <div id="status"></div>
-  <div id="instrucoes">1. Pisa na embreagem > 2. Engata a 1ª > 3. Acelera + solta devagar</div>
+  <div id="debug">EMB: 0 | ACE: 0 | MARCHA: N</div>
 
   <div id="pedais">
-    <div class="pedal" id="embreagem">
-      <div class="pedal-label">EMBREAGEM</div>
-    </div>
-    <div class="pedal" id="freio">
-      <div class="pedal-label">FREIO</div>
-    </div>
-    <div class="pedal" id="acelerador">
-      <div class="pedal-label">ACELERADOR</div>
-    </div>
+    <div class="pedal" id="embreagem"><div class="pedal-label">EMBREAGEM</div></div>
+    <div class="pedal" id="freio"><div class="pedal-label">FREIO</div></div>
+    <div class="pedal" id="acelerador"><div class="pedal-label">ACELERADOR</div></div>
   </div>
 
   <div id="cambio">
@@ -121,158 +95,84 @@
   </div>
 
 <script>
-  let estado = {
-    embreagem: 0, // 0 a 100
-    acelerador: 0,
-    freio: 0,
-    marcha: 'N',
-    velocidade: 0,
-    rpm: 800,
-    carroLigado: false
-  };
-
+  let embreagem = 0, acelerador = 0, freio = 0;
+  let marcha = 'N', velocidade = 0;
+  
   const embreagemEl = document.getElementById('embreagem');
   const aceleradorEl = document.getElementById('acelerador');
   const freioEl = document.getElementById('freio');
   const velocidadeEl = document.getElementById('velocidade');
   const marchaEl = document.getElementById('marcha-display');
-  const rpmEl = document.getElementById('rpm');
-  const statusEl = document.getElementById('status');
-  const pistaEl = document.getElementById('pista-video');
-  const instrucoesEl = document.getElementById('instrucoes');
+  const estradaEl = document.getElementById('estrada');
+  const debugEl = document.getElementById('debug');
 
   // EMBREAGEM
-  embreagemEl.addEventListener('touchstart', (e) => { e.preventDefault(); pisarEmbreagem(); });
-  embreagemEl.addEventListener('mousedown', () => pisarEmbreagem());
-  embreagemEl.addEventListener('touchend', () => soltarEmbreagem());
-  embreagemEl.addEventListener('mouseup', () => soltarEmbreagem());
+  function pisarEmb() { embreagem = 100; embreagemEl.classList.add('ativo', 'pisada'); }
+  function soltarEmb() {
+    let i = setInterval(() => {
+      embreagem -= 5;
+      embreagemEl.style.transform = `translateY(${-35 * embreagem / 100}px)`;
+      if (embreagem <= 0) {
+        embreagem = 0;
+        embreagemEl.classList.remove('ativo', 'pisada');
+        clearInterval(i);
+      }
+    }, 40);
+  }
+  embreagemEl.ontouchstart = embreagemEl.onmousedown = (e) => { e.preventDefault(); pisarEmb(); };
+  embreagemEl.ontouchend = embreagemEl.onmouseup = () => soltarEmb();
 
   // ACELERADOR
-  aceleradorEl.addEventListener('touchstart', (e) => { e.preventDefault(); estado.acelerador = 100; aceleradorEl.classList.add('ativo'); });
-  aceleradorEl.addEventListener('mousedown', () => { estado.acelerador = 100; aceleradorEl.classList.add('ativo'); });
-  aceleradorEl.addEventListener('touchend', () => { estado.acelerador = 0; aceleradorEl.classList.remove('ativo'); });
-  aceleradorEl.addEventListener('mouseup', () => { estado.acelerador = 0; aceleradorEl.classList.remove('ativo'); });
+  aceleradorEl.ontouchstart = aceleradorEl.onmousedown = (e) => { e.preventDefault(); acelerador = 100; aceleradorEl.classList.add('ativo'); };
+  aceleradorEl.ontouchend = aceleradorEl.onmouseup = () => { acelerador = 0; aceleradorEl.classList.remove('ativo'); };
 
   // FREIO
-  freioEl.addEventListener('touchstart', (e) => { e.preventDefault(); estado.freio = 100; freioEl.classList.add('ativo'); });
-  freioEl.addEventListener('mousedown', () => { estado.freio = 100; freioEl.classList.add('ativo'); });
-  freioEl.addEventListener('touchend', () => { estado.freio = 0; freioEl.classList.remove('ativo'); });
-  freioEl.addEventListener('mouseup', () => { estado.freio = 0; freioEl.classList.remove('ativo'); });
+  freioEl.ontouchstart = freioEl.onmousedown = (e) => { e.preventDefault(); freio = 100; freioEl.classList.add('ativo'); };
+  freioEl.ontouchend = freioEl.onmouseup = () => { freio = 0; freioEl.classList.remove('ativo'); };
 
   // MARCHAS
   document.querySelectorAll('.marcha-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (estado.embreagem < 85) {
-        mostrarStatus('Pisa fundo na embreagem!');
-        return;
-      }
-      trocarMarcha(btn.dataset.marcha);
-    });
+    btn.onclick = () => {
+      if (embreagem < 80) return; // só troca pisado fundo
+      marcha = btn.dataset.marcha;
+      document.querySelectorAll('.marcha-btn').forEach(b => b.classList.remove('ativa'));
+      btn.classList.add('ativa');
+      marchaEl.innerText = marcha;
+      acelerador = 0; aceleradorEl.classList.remove('ativo'); // regra: troca marcha corta acelerador
+    };
   });
 
-  function pisarEmbreagem() {
-    estado.embreagem = 100;
-    embreagemEl.classList.add('ativo');
-    embreagemEl.classList.add('pisada');
-  }
-
-  function soltarEmbreagem() {
-    let soltando = setInterval(() => {
-      estado.embreagem -= 4; // mais rápido
-      embreagemEl.style.transform = `translateY(${-35 * estado.embreagem / 100}px)`;
-      
-      if (estado.embreagem <= 0) {
-        estado.embreagem = 0;
-        embreagemEl.classList.remove('ativo');
-        embreagemEl.classList.remove('pisada');
-        clearInterval(soltando);
-      }
-    }, 30);
-  }
-
-  function trocarMarcha(novaMarcha) {
-    estado.marcha = novaMarcha;
-    document.querySelectorAll('.marcha-btn').forEach(b => b.classList.remove('ativa'));
-    document.querySelector(`[data-marcha="${novaMarcha}"]`).classList.add('ativa');
-    marchaEl.innerText = novaMarcha;
-    
-    // Regra: ao trocar marcha, corta aceleração
-    estado.acelerador = 0;
-    aceleradorEl.classList.remove('ativo');
-    
-    if (novaMarcha !== 'N') instrucoesEl.innerText = 'Acelera e solta a embreagem devagar';
-  }
-
-  function mostrarStatus(texto) {
-    statusEl.innerText = texto;
-    statusEl.style.display = 'block';
-    setTimeout(() => statusEl.style.display = 'none', 2000);
-  }
-
-  // LOOP DO JOGO
+  // LOOP PRINCIPAL - SIMPLIFICADO
   setInterval(() => {
-    // RPM base
-    estado.rpm = 800 + (estado.acelerador * 25);
-    
-    // LÓGICA DE SAÍDA MAIS FÁCIL
-    if (estado.marcha === '1' && estado.acelerador > 30 && estado.embreagem < 70) {
-      if (!estado.carroLigado) {
-        estado.carroLigado = true;
-        instrucoesEl.innerText = 'Boa! Continua acelerando';
-      }
-      // Acelera o carro
-      estado.velocidade += (estado.acelerador / 100) * 0.4 * (1 - estado.embreagem/200);
+    // Lógica de movimento: SE tiver marcha + acelerador + embreagem soltando = ANDA
+    if (marcha !== 'N' && acelerador > 20) {
+      let forca = (acelerador / 100) * ((100 - embreagem) / 100); // quanto mais solta a embreagem, mais anda
+      velocidade += forca * 0.6;
     }
 
-    // Morreu o carro - mais tolerante
-    if (estado.marcha !== 'N' && estado.embreagem < 10 && estado.acelerador < 15 && estado.velocidade < 2) {
-      estado.carroLigado = false;
-      estado.velocidade = 0;
-      mostrarStatus('MORREU! Pisou pouco no acelerador');
-      instrucoesEl.innerText = 'Volta pro N, pisa na embreagem e tenta de novo';
-    }
-
-    // Freio
-    if (estado.freio > 0) {
-      estado.velocidade -= 1.2;
-      estado.carroLigado = false;
-    }
-    
-    // Física
-    estado.velocidade *= 0.985; // atrito
-    if (estado.velocidade < 0.5) {
-      estado.velocidade = 0;
-      estado.carroLigado = false;
-    }
+    // Freio e atrito
+    if (freio > 0) velocidade -= 1.5;
+    velocidade *= 0.97;
+    if (velocidade < 0.3) velocidade = 0;
 
     // Limite por marcha
-    let velMax = { 'N': 0, '1': 30, '2': 60, '3': 90 }[estado.marcha];
-    if (estado.velocidade > velMax) estado.velocidade = velMax;
-
-    // RPM com velocidade
-    if (estado.carroLigado) estado.rpm = 1000 + estado.velocidade * 80;
+    let velMax = { 'N': 0, '1': 35, '2': 65, '3': 100 }[marcha];
+    if (velocidade > velMax) velocidade = velMax;
 
     // UI
-    velocidadeEl.innerText = Math.floor(estado.velocidade) + ' km/h';
-    rpmEl.innerText = Math.floor(estado.rpm) + ' RPM';
+    velocidadeEl.innerText = Math.floor(velocidade) + ' km/h';
+    debugEl.innerText = `EMB: ${Math.floor(embreagem)} | ACE: ${acelerador} | MARCHA: ${marcha}`;
     
-    // Animar pista
-    if (estado.velocidade > 1) {
-      pistaEl.classList.add('andando');
-      pistaEl.style.animationDuration = (0.5 - estado.velocidade/200) + 's';
+    if (velocidade > 0.5) {
+      estradaEl.classList.add('andando');
+      estradaEl.style.animationDuration = (0.4 - velocidade/250) + 's';
     } else {
-      pistaEl.classList.remove('andando');
+      estradaEl.classList.remove('andando');
     }
 
-    // Quando carro anda, embreagem fica preta
-    if (estado.velocidade > 8 && estado.embreagem < 20) {
-      embreagemEl.classList.remove('ativo');
-    }
-
-    // Reset
-    if (!estado.carroLigado && estado.embreagem > 90 && estado.marcha === 'N') {
-      instrucoesEl.innerText = '1. Pisa na embreagem > 2. Engata a 1ª > 3. Acelera + solta devagar';
-    }
+    // Quando anda, embreagem volta pro preto
+    if (velocidade > 5 && embreagem < 30) embreagemEl.classList.remove('ativo');
+    
   }, 50);
 </script>
 </body>
